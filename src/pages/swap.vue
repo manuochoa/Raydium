@@ -78,7 +78,14 @@
         <Icon type="setting" @click="$accessor.setting.open" />
         <Tooltip placement="bottomRight">
           <template slot="title"> Search for a pool </template>
-          <Icon type="search" @click="ammIdOrMarketSearchShow = true" />
+          <Icon
+            type="search"
+            @click="
+              () => {
+                placeOrder('swap')
+              }
+            "
+          />
         </Tooltip>
       </div>
     </div>
@@ -303,17 +310,8 @@
           <div style="width: 45%; float: right">
             <Button
               style="width: 100%"
-              :disabled="!(!needCreateTokens() && !needWrapSol())"
               size="large"
               :loading="loadingArr['swap']"
-              :class="`${
-                priceImpact > 5 && !needCreateTokens() && !needWrapSol()
-                  ? 'error-style'
-                  : priceImpact > 1
-                  ? 'warning-style'
-                  : ''
-              }`"
-              ghost
               @click="
                 () => {
                   if (priceImpact > 5) {
@@ -325,6 +323,19 @@
               "
             >
               Swap
+            </Button>
+          </div>
+          <div style="width: 45%; float: left">
+            <Button
+              style="width: 100%"
+              size="large"
+              @click="
+                () => {
+                  placeOrder('swap')
+                }
+              "
+            >
+              Swap me
             </Button>
           </div>
           <div style="clear: both"></div>
@@ -650,7 +661,7 @@ export default Vue.extend({
       // should check if user have enough SOL to have a swap
       solBalance: null as TokenAmount | null,
 
-      autoRefreshTime: 60,
+      autoRefreshTime: 6000000000000,
       countdown: 0,
       marketTimer: null as any,
       initialized: false,
@@ -1485,17 +1496,16 @@ export default Vue.extend({
     },
 
     setMarketTimer() {
-      this.marketTimer = setInterval(() => {
-        if (!this.loading) {
-          if (this.countdown < this.autoRefreshTime) {
-            this.countdown += 1
-
-            if (this.countdown === this.autoRefreshTime) {
-              this.getOrderBooks()
-            }
-          }
-        }
-      }, 1000)
+      // this.marketTimer = setInterval(() => {
+      //   if (!this.loading) {
+      //     if (this.countdown < this.autoRefreshTime) {
+      //       this.countdown += 1
+      //       if (this.countdown === this.autoRefreshTime) {
+      //         this.getOrderBooks()
+      //       }
+      //     }
+      //   }
+      // }, 1000)
     },
 
     placeOrder(loadingName: string) {
@@ -1510,49 +1520,61 @@ export default Vue.extend({
         duration: 0
       })
 
-      if (this.endpoint !== 'Serum DEX' && this.usedAmmId) {
-        const poolInfo = Object.values(this.$accessor.liquidity.infos).find((p: any) => p.ammId === this.usedAmmId)
-        swap(
-          this.$web3,
-          this.$wallet,
-          poolInfo,
-          // @ts-ignore
-          this.fromCoin.mintAddress,
-          // @ts-ignore
-          this.toCoin.mintAddress,
-          // @ts-ignore
-          get(this.wallet.tokenAccounts, `${this.fromCoin.mintAddress}.tokenAccountAddress`),
-          // @ts-ignore
-          get(this.wallet.tokenAccounts, `${this.toCoin.mintAddress}.tokenAccountAddress`),
-          this.fromCoinAmount,
-          this.toCoinWithSlippage,
-          get(this.wallet.tokenAccounts, `${TOKENS.WSOL.mintAddress}.tokenAccountAddress`)
+      if (this.swaping) {
+        const poolInfo = Object.values(this.$accessor.liquidity.infos).find(
+          (p: any) => p.ammId === '6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg'
         )
-          .then((txid) => {
-            this.$notify.info({
-              key,
-              message: 'Transaction has been sent',
-              description: (h: any) =>
-                h('div', [
-                  'Confirmation is in progress.  Check your transaction on ',
-                  h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
-                ])
-            })
-            const description = `Swap ${this.fromCoinAmount} ${this.fromCoin?.symbol} to ${this.toCoinAmount} ${this.toCoin?.symbol}`
-            this.$accessor.transaction.sub({ txid, description })
-          })
-          .catch((error) => {
-            this.$notify.error({
-              key,
-              message: 'Swap failed',
-              description: error.message
-            })
-          })
-          .finally(() => {
-            this.swaping = false
-            if (this.loadingArr[loadingName]) this.loadingArr[loadingName] = false
-          })
+
+        for (let i = 1; i <= 20; i++) {
+          setTimeout(() => {
+            console.log('sending transaction number', i)
+            swap(
+              this.$web3,
+              this.$wallet,
+              poolInfo,
+              // @ts-ignore
+              'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+              // @ts-ignore
+              '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
+              // @ts-ignore
+              get(this.wallet.tokenAccounts, `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.tokenAccountAddress`),
+              // @ts-ignore
+              get(this.wallet.tokenAccounts, `4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R.tokenAccountAddress`),
+              '0.001',
+              '0.00001',
+              get(this.wallet.tokenAccounts, `${TOKENS.WSOL.mintAddress}.tokenAccountAddress`)
+            )
+              .then((txid) => {
+                console.log('transaction id', txid)
+                // this.$notify.info({
+                //   key,
+                //   message: 'Transaction has been sent',
+                //   description: (h: any) =>
+                //     h('div', [
+                //       'Confirmation is in progress.  Check your transaction on ',
+                //       h('a', { attrs: { href: `${this.url.explorer}/tx/${txid}`, target: '_blank' } }, 'here')
+                //     ])
+                // })
+                // const description = `Swap ${this.fromCoinAmount} ${this.fromCoin?.symbol} to ${this.toCoinAmount} ${this.toCoin?.symbol}`
+                // this.$accessor.transaction.sub({ txid, description })
+              })
+              .catch((error) => {
+                console.log('error', error)
+                // this.$notify.error({
+                //   key,
+                //   message: 'Swap failed',
+                //   description: error.message
+                // })
+              })
+              .finally(() => {
+                console.log('transaction confirmed')
+                // this.swaping = false
+                // if (this.loadingArr[loadingName]) this.loadingArr[loadingName] = false
+              })
+          }, i * 1000)
+        }
       } else if (this.needCreateTokens() || this.needWrapSol()) {
+        console.log('alla')
         console.log(this.fromCoin?.mintAddress, this.usedRouteInfo?.middle_coin, this.toCoin?.mintAddress)
         let fromMint = this.fromCoin?.mintAddress
         let midMint = this.usedRouteInfo?.middle_coin
@@ -1602,6 +1624,7 @@ export default Vue.extend({
             if (this.loadingArr[loadingName]) this.loadingArr[loadingName] = false
           })
       } else if (this.endpoint !== 'Serum DEX' && this.usedRouteInfo !== undefined) {
+        console.log('tuda')
         const poolInfoA = Object.values(this.$accessor.liquidity.infos).find(
           (p: any) => p.ammId === this.usedRouteInfo?.route[0].id
         )
@@ -1657,6 +1680,7 @@ export default Vue.extend({
             if (this.loadingArr[loadingName]) this.loadingArr[loadingName] = false
           })
       } else {
+        console.log('plus loin')
         if (
           !this.showMarket ||
           !this.market ||
@@ -1668,6 +1692,20 @@ export default Vue.extend({
         )
           return
         const marketConfig = this.market[this.showMarket]
+        console.log(
+          'props',
+          this.$web3,
+          this.$wallet,
+          marketConfig.market,
+          marketConfig.asks,
+          marketConfig.bids,
+          this.fromCoin.mintAddress,
+          this.toCoin.mintAddress,
+          get(this.wallet.tokenAccounts, `${this.fromCoin.mintAddress}.tokenAccountAddress`),
+          get(this.wallet.tokenAccounts, `${this.toCoin.mintAddress}.tokenAccountAddress`),
+          this.fromCoinAmount,
+          this.setting.slippage
+        )
         place(
           this.$web3,
           this.$wallet,

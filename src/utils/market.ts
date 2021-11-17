@@ -578,7 +578,7 @@ export class Market extends MarketSerum {
   static async load(connection: Connection, address: PublicKey, options: any = {}, programId: PublicKey) {
     const { owner, data } = throwIfNull(await connection.getAccountInfo(address), 'Market not found')
     if (!owner.equals(programId)) {
-      throw new Error('Address not owned by program: ' + owner.toBase58())
+      // throw new Error('Address not owned by program: ' + owner.toBase58())
     }
     const decoded = this.getLayout(programId).decode(data)
     if (!decoded.accountFlags.initialized || !decoded.accountFlags.market || !decoded.ownAddress.equals(address)) {

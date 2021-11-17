@@ -1,26 +1,31 @@
-import { initializeAccount } from '@project-serum/serum/lib/token-instructions';
+import { initializeAccount } from '@project-serum/serum/lib/token-instructions'
 // @ts-ignore without ts ignore, yarn build will failed
-import { Token } from '@solana/spl-token';
+import { Token } from '@solana/spl-token'
 import {
-  Account, AccountInfo, Commitment, Connection, PublicKey, SystemProgram, Transaction,
-  TransactionInstruction, TransactionSignature
-} from '@solana/web3.js';
+  Account,
+  AccountInfo,
+  Commitment,
+  Connection,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+  TransactionInstruction,
+  TransactionSignature
+} from '@solana/web3.js'
 
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID, RENT_PROGRAM_ID, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID
-} from '@/utils/ids';
-import { ACCOUNT_LAYOUT, MINT_LAYOUT } from '@/utils/layouts';
-import { TOKENS } from '@/utils/tokens';
+import { ASSOCIATED_TOKEN_PROGRAM_ID, RENT_PROGRAM_ID, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@/utils/ids'
+import { ACCOUNT_LAYOUT, MINT_LAYOUT } from '@/utils/layouts'
+import { TOKENS } from '@/utils/tokens'
 
 export const web3Config = {
   strategy: 'speed',
   rpcs: [
-    { url: 'https://free.rpcpool.com', weight: 10 },
-    { url: 'https://mainnet.rpcpool.com', weight: 10 },
-    { url: 'https://api.rpcpool.com', weight: 10 },
+    // { url: 'https://mainnet.rpcpool.com', weight: 10 },
+    // { url: 'https://api.rpcpool.com', weight: 10 },
     { url: 'https://solana-api.projectserum.com', weight: 10 },
-    { url: 'https://raydium.rpcpool.com', weight: 50 },
-    { url: 'https://api.mainnet-beta.solana.com', weight: 10 }
+    { url: 'https://raydium.rpcpool.com', weight: 50 }
+    // { url: 'https://api.mainnet-beta.solana.com', weight: 10 }
+    // { url: 'https://free.rpcpool.com', weight: 10 }
   ]
 }
 
